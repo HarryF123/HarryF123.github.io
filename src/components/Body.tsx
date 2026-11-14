@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { GitHubRepo } from "../assets/GitHubRepo";
 
 const GITHUB_USER = "HarryF123";
-const SHOWCASE = ["gaa-stor", "debloatR"];
+const SHOWCASE = ["gaa-stor", "debloatR", "GamesProject"];
 
 export default function Body() {
   const [repos, setRepos] = useState<GitHubRepo[]>([]);
