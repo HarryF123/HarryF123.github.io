@@ -23,22 +23,20 @@ export default function Body() {
         );
         return Promise.all(
           filtered.map(async (repo) => {
-            const response = await fetch(
-              `https://api.github.com/repos/${GITHUB_USER}/${repo.name}/contents/expo`,
-            );
-            if (response.status === 404) {
+            try {
+              const response = await fetch(
+                `https://api.github.com/repos/${GITHUB_USER}/${repo.name}/contents/expo`,
+              );
+              if (!response.ok) return { ...repo, expoGifUrl: null };
+              const files: { name: string; download_url: string | null }[] =
+                await response.json();
+              const gif = files
+                .filter((file) => /\.gif$/i.test(file.name))
+                .sort((a, b) => a.name.localeCompare(b.name))[0];
+              return { ...repo, expoGifUrl: gif?.download_url ?? null };
+            } catch {
               return { ...repo, expoGifUrl: null };
             }
-            if (!response.ok) {
-              throw new Error(`GitHub API returned ${response.status}`);
-            }
-
-            const files: { name: string; download_url: string | null }[] =
-              await response.json();
-            const gif = files
-              .filter((file) => /\.gif$/i.test(file.name))
-              .sort((a, b) => a.name.localeCompare(b.name))[0];
-            return { ...repo, expoGifUrl: gif?.download_url ?? null };
           }),
         );
       })
@@ -50,7 +48,10 @@ export default function Body() {
   }, []);
 
   return (
-    <section id="projects" className="scroll-mt-24 px-6 py-24 sm:px-10 sm:py-32">
+    <section
+      id="projects"
+      className="scroll-mt-24 px-6 py-24 sm:px-10 sm:py-32"
+    >
       <div className="mx-auto max-w-6xl">
         <p className="section-kicker text-center">Selected work</p>
         <h2 className="mb-4 mt-4 text-center text-4xl font-bold tracking-tight sm:text-5xl">
@@ -66,8 +67,13 @@ export default function Body() {
         {status === "done" && (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             {repos.map((repo, index) => (
-              <article key={repo.id} className="project-card overflow-hidden rounded-2xl border">
-                <div className={`project-art project-art-${index % 2} flex aspect-[1.55] items-center justify-center ${repo.expoGifUrl ? "overflow-hidden" : "p-8"}`}>
+              <article
+                key={repo.id}
+                className="project-card overflow-hidden rounded-2xl border"
+              >
+                <div
+                  className={`project-art project-art-${index % 2} flex aspect-[1.55] items-center justify-center ${repo.expoGifUrl ? "overflow-hidden" : "p-8"}`}
+                >
                   {repo.expoGifUrl ? (
                     <img
                       className="h-full w-full object-cover"
